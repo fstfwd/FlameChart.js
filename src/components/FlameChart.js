@@ -279,7 +279,7 @@ export default class FlameChart extends React.Component {
 
     gridContext.clearRect(0, 0, width, height);
 
-    calculator.drawGrid(gridContext, styles, height, 5, stackTimelineHeaderHeight, 1);
+    calculator.drawGrid(gridContext, styles.stackGrid, height, 5, stackTimelineHeaderHeight, 1);
   }
 
   _renderOverviewGrid() {
@@ -290,7 +290,7 @@ export default class FlameChart extends React.Component {
 
     overviewGridContext.clearRect(0, 0, width, height);
 
-    calculator.drawGrid(overviewGridContext, styles, height, 5, overviewTimelineHeaderHeight, 1);
+    calculator.drawGrid(overviewGridContext, styles.overviewGrid, height, 5, overviewTimelineHeaderHeight, 1);
   }
 
   setCollapsed(name, collapse) {
@@ -518,6 +518,8 @@ export default class FlameChart extends React.Component {
                rules={styles.stackWrapper}/>
         <Style scopeSelector='.stackGridCanvas'
                rules={styles.stackGridCanvas}/>
+        <Style scopeSelector='.overviewGridCanvas'
+               rules={styles.overviewGridCanvas}/>
         <Style scopeSelector='.stacks'
                rules={styles.stacks}/>
         <Style scopeSelector='.overviewWrapper'
@@ -530,7 +532,8 @@ export default class FlameChart extends React.Component {
           <div className='overviewWrapper' style={{ width, height: overviewViewportHeight }}>
             <Canvas ref={ref => this.ref.overviewGrid = ref}
                     width={width}
-                    height={overviewViewportHeight}/>
+                    height={overviewViewportHeight}
+                    className='overviewGridCanvas'/>
             <div style={{ position: 'absolute', top: overviewTimelineHeaderHeight, left: 0 }}>
               {overviewCanvases}
             </div>

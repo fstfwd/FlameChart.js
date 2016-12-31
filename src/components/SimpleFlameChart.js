@@ -222,4 +222,8 @@ export function unrenderSimpleFlameChart(element) {
   return ReactDOM.unmountComponentAtNode(element);
 }
 
+export function injectSimpleFlameChartStyles() {
+  return require('./SimpleFlameChart.less');
+}
+
 export default SimpleFlameChart;

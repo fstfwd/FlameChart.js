@@ -4,7 +4,8 @@ export {
   SimpleFlameChart,
   SimpleStack,
   renderSimpleFlameChart,
-  unrenderSimpleFlameChart
+  unrenderSimpleFlameChart,
+  injectSimpleFlameChartStyles
 } from './components/SimpleFlameChart';
 
 export default from './components/FlameChart';

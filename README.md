@@ -32,6 +32,8 @@ Download and import [SimpleFlameChart.js](dist/SimpleFlameChart.js)
 
 #### Render
 ```js
+window.injectSimpleFlameChartStyles();
+
 let { Green } = window.HSLColorGenerator;
 
 let timings = [
@@ -67,8 +69,10 @@ let simpleFlameChart = window.renderSimpleFlameChart({
 SimpleFlameChart enables searching and stack toggling
 
 ```jsx
-import { SimpleStack, SimpleFlameChart } from 'react-flamechart';
+import { SimpleStack, SimpleFlameChart, injectSimpleFlameChartStyles } from 'react-flamechart';
 import { Green } rom 'react-flamechart/libs/helpers/HSLColorGenerator'
+
+injectSimpleFlameChartStyles();
 
 class Test {
     timings = [

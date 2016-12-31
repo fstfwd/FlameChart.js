@@ -86,7 +86,15 @@ export const Base = {
     left: 0,
     top: 0
   },
+  overviewGridCanvas: {},
   stackGrid: {
+    gridStrokeStyle: 'transparent',
+    gridLineWidth: 1,
+    headerBackgroundFillStyle: 'transparent',
+    headerTextFillStyle: 'transparent',
+    headerFont: `11px Lucida Grande', 'Open Sans', sans-serif`
+  },
+  overviewGrid: {
     gridStrokeStyle: 'transparent',
     gridLineWidth: 1,
     headerBackgroundFillStyle: 'transparent',
@@ -246,6 +254,11 @@ export const Light = _.merge({}, Base, {
     headerBackgroundFillStyle: 'rgba(255, 255, 255, 0.5)',
     headerTextFillStyle: '#333'
   },
+  overviewGrid: {
+    gridStrokeStyle: 'rgba(0, 0, 0, 0.1)',
+    headerBackgroundFillStyle: 'rgba(255, 255, 255, 0.5)',
+    headerTextFillStyle: '#333'
+  },
   stackSearchResultCount: {
     color: 'rgba(0, 0, 0, 0.4)'
   },
@@ -366,6 +379,11 @@ export const Dark = _.merge({}, Base, {
     backgroundColor: '#222'
   },
   stackGrid: {
+    gridStrokeStyle: 'rgba(255, 255, 255, 0.1)',
+    headerBackgroundFillStyle: 'rgba(0, 0, 0, 0.0)',
+    headerTextFillStyle: '#AAA'
+  },
+  overviewGrid: {
     gridStrokeStyle: 'rgba(255, 255, 255, 0.1)',
     headerBackgroundFillStyle: 'rgba(0, 0, 0, 0.0)',
     headerTextFillStyle: '#AAA'
