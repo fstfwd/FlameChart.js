@@ -34,11 +34,24 @@
 
   var timings = [];
   var themeCounter = 0;
+  var flameChart = null;
 
   window.injectSimpleFlameChartStyles();
 
+  function onTimingClick(timing) {
+    if (flameChart.isTimingSelected(timing)) {
+      flameChart.setTimingSelected(timing, false);
+
+      return;
+    }
+
+    flameChart.setTimingSelected(timing, true);
+
+    alert('Selected: ' + JSON.stringify(timing, null, 2));
+  }
+
   function render() {
-    window.renderSimpleFlameChart({
+    flameChart = window.renderSimpleFlameChart({
       timings: timings,
       theme: themeCounter++ % 2 ? 'light' : 'dark',
       start: 800,
@@ -47,6 +60,7 @@
           name: 'Network',
           types: ['request'],
           defaultHeight: 0.2,
+          onTimingClick: onTimingClick,
           getTimingColor(timing) {
             return Green.colorForID(timing.name)
           }
@@ -57,6 +71,7 @@
           overviewType: 'spread',
           overviewHeight: 50,
           defaultHeight: 0.3,
+          onTimingClick: onTimingClick,
           getTimingColor(timing) {
             return Cool.colorForID(timing.name)
           }
@@ -66,6 +81,7 @@
           types: ['main'],
           overviewHeight: 50,
           defaultHeight: 0.5,
+          onTimingClick: onTimingClick,
           getTimingColor(timing, mode) {
             if (mode === 'overview') {
               return 'orange';
@@ -79,6 +95,7 @@
           types: ['gpu'],
           overviewHeight: 50,
           defaultHeight: 0.5,
+          onTimingClick: onTimingClick,
           getTimingColor(timing) {
             return Cool.colorForID(timing.name)
           }

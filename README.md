@@ -1,6 +1,9 @@
 # FlameChart.js
 A flamechart component (based on Chrome DevTools). Can be used as a React component or used as a standalone library.
 
+## Credits
+This library has code borrowed from Chrome DevTools as described in the LICENSE file and due credit goes to Chrome Team. Credit headers will be assigned to each file in the coming days.
+
 ![](screenshot.png)
 
 ## Features
