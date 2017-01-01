@@ -165,7 +165,7 @@ export default class FlameChart extends React.Component {
     }
 
     let stackViewportHeight = height - overviewViewportHeight;
-    let stackDividerHeights = children.length * 3;
+    let stackDividerHeights = children.length * 1;
     let totalStackHeight = stackViewportHeight - stackTimelineHeaderHeight - stackDividerHeights;
     let totalCollapsedHeight = 0;
     let containsRecentlyOpened = false;

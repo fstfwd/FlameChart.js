@@ -2,9 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 export default class Canvas extends React.Component {
-  static DPI = window.devicePixelRatio;
-  static DPI_INC = 0.1;
-  static DPI_DSC = 0.2;
+  static DPI = window.devicePixelRatio || 1;
+  static DPI_INC = 0.05;
+  static DPI_DSC = 0.1;
   static PREFERRED_FRAME_TIME = 1000 / 60;
   static MIN_DPI = window.devicePixelRatio * 0.5 + Canvas.DPI_INC;
   static MAX_DPI = window.devicePixelRatio || 1;
