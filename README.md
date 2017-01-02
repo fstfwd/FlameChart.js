@@ -146,11 +146,11 @@ class Test {
                      overviewHeight={40}
                      defaultHeight={1} // 1 = "100%"
                      timings={timings}
-                     entryStartGetter={::this._entryStartGetter}
-                     entryEndGetter={::this._entryEndGetter}
-                     entryNameGetter={::this._entryStartGetter}
-                     entryHighlightedGetter={::this._entryHighlightedGetter}
-                     entryFillGetter={::this._entryFillGetter} />
+                     entryStartGetter={this._entryStartGetter}
+                     entryEndGetter={this._entryEndGetter}
+                     entryNameGetter={this._entryStartGetter}
+                     entryHighlightedGetter={this._entryHighlightedGetter}
+                     entryFillGetter={this._entryFillGetter} />
             </FlameChart>
         );
     }
