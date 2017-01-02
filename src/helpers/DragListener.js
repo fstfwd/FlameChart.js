@@ -5,7 +5,8 @@ class DragListener extends EventEmitter {
   end = { x: 0, y: 0 };
   delta = { x: 0, y: 0 };
 
-  isDragging = false;
+  isCapturing = false;
+  dragged = false;
   handlers = {};
   stopPropagation = false;
   grabCursor = false;
@@ -35,14 +36,17 @@ class DragListener extends EventEmitter {
   }
 
   onMouseUp(e) {
-    if (this.isDragging) {
-      this.isDragging = false;
+    if (this.isCapturing) {
+      this.isCapturing = false;
+      this.dragged = false;
 
       if (this.grabCursor) {
         DragListener.setDefaultCursor(e.target);
       }
 
       this.emit('end', e);
+
+      e.preventDefault();
     }
   }
 
@@ -50,7 +54,9 @@ class DragListener extends EventEmitter {
   onMouseLeave = this.onMouseUp;
 
   onMouseMove(e) {
-    if (this.isDragging) {
+    if (this.isCapturing) {
+      this.dragged = true;
+
       const { delta, end, start } = this;
 
       end.x = e.nativeEvent.clientX;
@@ -81,7 +87,7 @@ class DragListener extends EventEmitter {
       DragListener.setGrabCursor(e.target);
     }
 
-    this.isDragging = true;
+    this.isCapturing = true;
 
     this.emit('start', start, e);
   }

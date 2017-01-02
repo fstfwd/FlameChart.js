@@ -15,6 +15,8 @@ const { PropTypes } = React;
 export { Tooltip };
 
 export default class Stack extends React.Component {
+  static MOUSE_CLICK_TIMEOUT = 100;
+
   static propTypes = {
     name: PropTypes.string.isRequired,
     event: PropTypes.shape({ name: PropTypes.string }),
@@ -51,6 +53,7 @@ export default class Stack extends React.Component {
 
   _scrollTop = 0;
   _lastTooltipEntry = 0;
+  _mouseDownTooltipTime = 0;
 
   scrollTop = 0;
   dragListener = new DragListener();
@@ -142,18 +145,27 @@ export default class Stack extends React.Component {
     const { scroller } = this.ref;
     const { scrollHeight, offsetHeight } = scroller;
 
+    this._mouseDownTooltipTime = 0;
+
     scroller.scrollTop = Math.max(Math.min(this._scrollTop + -delta.y, scrollHeight - offsetHeight), 0);
   }
 
-  _handleClick(e) {
-    const x = e.nativeEvent.offsetX;
-    const y = e.nativeEvent.offsetY;
-    const { onEntryClick } = this.props;
+  _handleTooltipMouseDown() {
+    this._mouseDownTooltipTime = Date.now();
+  }
 
-    if (onEntryClick != null) {
-      const entry = this.getEntryAt(x, y);
-      if (entry != null) {
-        onEntryClick(entry.timing, entry, e);
+  _handleTooltipMouseUp(e) {
+    if (Date.now() - this._mouseDownTooltipTime <= Stack.MOUSE_CLICK_TIMEOUT) {
+      const { onEntryClick } = this.props;
+
+      if (onEntryClick != null) {
+        const { offsetX: x, offsetY: y } = e.nativeEvent;
+
+        const entry = this.getEntryAt(x, y);
+
+        if (entry != null) {
+          onEntryClick(entry.timing, entry, e);
+        }
       }
     }
   }
@@ -454,7 +466,9 @@ export default class Stack extends React.Component {
     const contentHeight = computedCollapsed ? 0 : entryHeight * (maxDepth + 1) + 18 + 2;
 
     return (
-      <div style={{ position: 'relative' }}>
+      <div style={{ position: 'relative' }}
+           onMouseUp={::this._handleTooltipMouseUp}
+           onMouseDown={::this._handleTooltipMouseDown}>
         <Style scopeSelector='.stackSearch'
                rules={styles.stackSearch}/>
         <Style scopeSelector='.stackHeader'
@@ -476,8 +490,7 @@ export default class Stack extends React.Component {
         <div style={{ height, width, position: 'relative', userSelect: 'none' }}
              {...dragListener.handlers}
              onMouseLeave={::this._handleMouseLeave}
-             onMouseMove={::this._handleMouseMove}
-             onClick={::this._handleClick}>
+             onMouseMove={::this._handleMouseMove}>
           <Canvas ref={ref => this.ref.chart = ref}
                   className='stackCanvas'
                   width={width}
