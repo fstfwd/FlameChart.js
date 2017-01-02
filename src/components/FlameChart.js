@@ -61,7 +61,7 @@ export default class FlameChart extends React.Component {
   }
 
   _handleDragStart() {
-    const { calculator: { offsetMinRatio, offsetMaxRatio } } = this;
+    const { calculator: { props: { offsetMinRatio, offsetMaxRatio } } } = this;
 
     this._offsetMinRatio = offsetMinRatio;
     this._offsetMaxRatio = offsetMaxRatio;
@@ -91,8 +91,14 @@ export default class FlameChart extends React.Component {
   }
 
   _handleWheel(e) {
+    e.preventDefault();
+
+    if (e.deltaY === 0) {
+      return;
+    }
+
     const { width, min, max } = this.props;
-    const { calculator, calculator: { offsetMinRatio, offsetMaxRatio } } = this;
+    const { calculator, calculator: { props: { offsetMinRatio, offsetMaxRatio } } } = this;
 
     const ratio = e.nativeEvent.offsetX / width;
     const rate = (1 - (offsetMinRatio + offsetMaxRatio)) ** 1.1;
@@ -109,8 +115,6 @@ export default class FlameChart extends React.Component {
       offsetMinRatio: nextOffsetMinRatio,
       offsetMaxRatio: nextOffsetMaxRatio
     });
-
-    e.preventDefault();
   }
 
   _getHeights(stackHeights, stackCollapsed, props = this.props) {
@@ -272,6 +276,10 @@ export default class FlameChart extends React.Component {
     }
   }
 
+  _updateCanvasDPI() {
+    Canvas.updateDPI();
+  }
+
   _renderStackGrid() {
     const { calculator } = this;
     const { width, height, styles, stackTimelineHeaderHeight } = this.props;
@@ -340,7 +348,7 @@ export default class FlameChart extends React.Component {
       offsetMaxRatio: 0
     });
 
-    overviewCalculator.update(calculator);
+    overviewCalculator.update(calculator.props);
   }
 
   componentWillUnmount() {

@@ -32,7 +32,7 @@ export default class Curtain extends React.Component {
 
   _handleDragStart(start, e) {
     const { calculator } = this.props;
-    const { offsetMinRatio, offsetMaxRatio } = calculator;
+    const { props: { offsetMinRatio, offsetMaxRatio } } = calculator;
     const { curtain } = this.ref;
 
     DragListener.setGrabCursor(curtain);
@@ -45,7 +45,7 @@ export default class Curtain extends React.Component {
   _handleDragThumb(start, end, delta) {
     const { width, calculator } = this.props;
     const { _offsetMinRatio: offsetMinRatio, _offsetMaxRatio: offsetMaxRatio } = this;
-    const { min, max } = calculator.getRange();
+    const { min, max } = calculator.props;
     const range = max - min;
 
     let offset = delta.x / width;
@@ -86,7 +86,7 @@ export default class Curtain extends React.Component {
   }
 
   _render() {
-    const { calculator: { offsetMinRatio, offsetMaxRatio } } = this.props;
+    const { calculator: { props: { offsetMinRatio, offsetMaxRatio } } } = this.props;
     const { leftCurtain, rightCurtain } = this.ref;
 
     leftCurtain.style.width = `${offsetMinRatio * 100}%`;

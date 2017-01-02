@@ -4,84 +4,72 @@ import EventEmitter from 'eventemitter3';
 export default class Calculator extends EventEmitter {
   static MinGridSlicePx = 64;
 
-  width = 0;
-  paddingLeft = 0;
-  start = 0;
-  min = 0;
-  max = 0;
-  offsetMinRatio = 0;
-  offsetMaxRatio = 0;
-  timeToPixel = 0;
+  props = {
+    width: 0,
+    paddingLeft: 0,
+    start: 0,
+    min: 0,
+    max: 0,
+    offsetMinRatio: 0,
+    offsetMaxRatio: 0,
+    offsetMin: 0,
+    offsetMax: 0,
+    timeToPixel: 0,
+  };
+
+  _updateId = null;
 
   constructor(...args) {
     super(...args);
+
+    this.__update = () => {
+      this._updateId = null;
+      this.emit('change');
+    };
   }
 
   forceUpdate() {
-    this.emit('change', this);
+    if (this._updateId != null) {
+      window.cancelAnimationFrame(this._updateId);
+      this._updateId = null;
+    }
+
+    this._updateId = window.requestAnimationFrame(this.__update);
   }
 
   update(props) {
-    for (const key in {
-      width: true,
-      paddingLeft: true,
-      start: true,
-      min: true,
-      max: true,
-      offsetMinRatio: true,
-      offsetMaxRatio: true
-    }) {
-      if (props.hasOwnProperty(key)) {
-        this[key] = props[key];
-      }
-    }
+    const baseProps = this.props;
 
-    const { min: offsetMin, max: offsetMax } = this.getOffsetRange();
+    Object.assign(baseProps, props);
 
-    this.timeToPixel = this.width / (offsetMax - offsetMin);
+    const { min, max, width, offsetMinRatio, offsetMaxRatio } = baseProps;
+    const range = max - min;
+    const offsetMin = min + offsetMinRatio * range;
+    const offsetMax = max - offsetMaxRatio * range;
 
-    this.emit('change', this);
+    baseProps.offsetMin = offsetMin;
+    baseProps.offsetMax = offsetMax;
+    baseProps.timeToPixel = width / (offsetMax - offsetMin);
+    baseProps.offsetLeft = -(offsetMin - min) / (offsetMax - offsetMin) * width;
+
+    this.forceUpdate();
   }
 
   getPosition(time) {
-    const { min: offsetMin } = this.getOffsetRange();
+    const { offsetMin, timeToPixel, paddingLeft } = this.props;
 
-    return Math.round((time - offsetMin) * this.timeToPixel + this.paddingLeft);
+    return Math.round((time - offsetMin) * timeToPixel + paddingLeft);
   }
 
   formatValue(value, precision) {
-    return ((value - this.start)).toFixed(precision) + ' ms';
-  }
-
-  getRange() {
-    const { min, max } = this;
-
-    return { min, max };
-  }
-
-  getOffsetLeft() {
-    const { min, width } = this;
-    const { min: offsetMin, max: offsetMax } = this.getOffsetRange();
-
-    return -(offsetMin - min) / (offsetMax - offsetMin) * width;
-  }
-
-  getOffsetRange() {
-    const { min, max } = this.getRange();
-    const range = max - min;
-
-    const currMin = min + this.offsetMinRatio * range;
-    const currMax = max - this.offsetMaxRatio * range;
-
-    return { min: currMin, max: currMax };
+    return ((value - this.props.start)).toFixed(precision) + ' ms';
   }
 
   getDividerOffsets(freeZoneAtLeft = 0) {
-    const { paddingLeft, start } = this;
-    const { max: offsetRangeMax, min: offsetRangeMin } = this.getOffsetRange();
-    const offsetRange = offsetRangeMax - offsetRangeMin;
+    const { paddingLeft, start, offsetMax, offsetMin } = this.props;
+    const offsetRange = offsetMax - offsetMin;
 
-    const clientWidth = this.getPosition(offsetRangeMax);
+    const clientWidth = this.getPosition(offsetMax);
     const pixelsPerTime = clientWidth / offsetRange;
 
     let dividersCount = clientWidth / Calculator.MinGridSlicePx;
@@ -103,10 +91,10 @@ export default class Calculator extends EventEmitter {
       gridSliceTime = gridSliceTime / 2;
     }
 
-    const leftBoundaryTime = offsetRangeMin - paddingLeft / pixelsPerTime;
+    const leftBoundaryTime = offsetMin - paddingLeft / pixelsPerTime;
     const firstDividerTime =
       Math.ceil((leftBoundaryTime - start) / gridSliceTime) * gridSliceTime + start;
-    let lastDividerTime = offsetRangeMax;
+    let lastDividerTime = offsetMax;
 
     // Add some extra space past the right boundary as the rightmost divider label text
     // may be partially shown rather than just pop up when a new rightmost divider gets into the view.
@@ -133,7 +121,7 @@ export default class Calculator extends EventEmitter {
   drawGrid(context, styles, height, paddingTop, headerHeight, freeZoneAtLeft) {
     context.save();
 
-    const { width } = this;
+    const { width } = this.props;
     const dividersData = this.getDividerOffsets();
     const dividerOffsets = dividersData.offsets;
     const precision = dividersData.precision;

@@ -2,12 +2,12 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 export default class Canvas extends React.Component {
-  static DPI = window.devicePixelRatio || 1;
-  static DPI_INC = 0.05;
-  static DPI_DSC = 0.1;
+  static DPI = (window.devicePixelRatio || 1) * 1000;
+  static DPI_INC = 50;
+  static DPI_DSC = 100;
   static PREFERRED_FRAME_TIME = 1000 / 60;
-  static MIN_DPI = window.devicePixelRatio * 0.5 + Canvas.DPI_INC;
-  static MAX_DPI = window.devicePixelRatio || 1;
+  static MIN_DPI = (window.devicePixelRatio * 0.5) * 1000 + Canvas.DPI_DSC;
+  static MAX_DPI = (window.devicePixelRatio || 1) * 1000;
   static FRAME_GROUP_SIZE = 60;
 
   static canvasCount = 0;
@@ -18,6 +18,10 @@ export default class Canvas extends React.Component {
   totalFrameTime = 0;
   frameCount = 0;
   lastDPI = null;
+
+  static defaultProps = {
+    autoScale: false
+  };
 
   componentWillReceiveProps(nextProps) {
     if (this.props.autoScale && !nextProps.autoScale) {
@@ -40,6 +44,8 @@ export default class Canvas extends React.Component {
   }
 
   static setDPI(canvas, context, width, height, dpi) {
+    dpi = Math.round(dpi / 10) / 100;
+
     canvas.style.height = `${height}px`;
     canvas.style.width = `${width}px`;
 
@@ -82,7 +88,7 @@ export default class Canvas extends React.Component {
       const fps = 1000 / avgFrameTime / canvasCount;
 
       context.fillStyle = 'red';
-      context.fillText(`DPI: ${currDPI.toFixed(2)}; FRAME: ${frameCount}; FPS: ${fps.toFixed(2)}`, 5, height - 5);
+      context.fillText(`DPI: ${currDPI}; FRAME: ${frameCount}; FPS: ${fps.toFixed(2)}`, 5, height - 5);
     }
   };
 
@@ -93,21 +99,21 @@ export default class Canvas extends React.Component {
     let frameCount = this.frameCount + 1;
     const avgFrameTime = totalFrameTime / frameCount;
     const canvasCount = Canvas.canvasCount;
-
-    if (avgFrameTime > (Canvas.PREFERRED_FRAME_TIME / canvasCount) && currDPI > Canvas.MIN_DPI) {
-      this.optimalDPI = currDPI - Canvas.DPI_DSC;
-    } else if (avgFrameTime < (Canvas.PREFERRED_FRAME_TIME / canvasCount) && currDPI < Canvas.MAX_DPI) {
-      this.optimalDPI = currDPI + Canvas.DPI_INC;
-    }
+    let nextDPI = this.optimalDPI;
 
     if (frameCount > Canvas.FRAME_GROUP_SIZE) {
       totalFrameTime = 0;
       frameCount = 0;
+    } else if (avgFrameTime > (Canvas.PREFERRED_FRAME_TIME / canvasCount) && (currDPI - Canvas.DPI_DSC) >= Canvas.MIN_DPI) {
+      nextDPI = currDPI - Canvas.DPI_DSC;
+    } else if (avgFrameTime < (Canvas.PREFERRED_FRAME_TIME / canvasCount) && (currDPI + Canvas.DPI_INC) <= Canvas.MAX_DPI) {
+      nextDPI = currDPI + Canvas.DPI_INC;
     }
 
     this.totalFrameTime = totalFrameTime;
     this.frameCount = frameCount;
     this.startTime = null;
+    this.optimalDPI = nextDPI;
   };
 
 

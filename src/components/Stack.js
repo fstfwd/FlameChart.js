@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { trimTextMiddle } from '../helpers/trim';
+import measureTextWidth from '../helpers/measureTextWidth';
 import Canvas from './Canvas';
 import TooltipWrapper from './TooltipWrapper';
 import Tooltip from './Tooltip';
@@ -220,9 +221,7 @@ export default class Stack extends React.Component {
     const { computedWidth: width, calculator, computedHeight: height, styles } = this.props;
 
     const entryHeight = styles.stackEntry.height;
-    const { min } = calculator.getRange();
-    const { min: offsetMin, max: offsetMax } = calculator.getOffsetRange();
-    const scrollLeft = calculator.getOffsetLeft();
+    const { min, offsetMin, offsetMax, offsetLeft: scrollLeft } = calculator.props;
     const scrollTop = this.scrollTop;
     const offsetRange = offsetMax - offsetMin;
 
@@ -231,7 +230,7 @@ export default class Stack extends React.Component {
       const x = (start - min) / offsetRange * width + scrollLeft;
       const y = depth * entryHeight + 18 - scrollTop;
 
-      let entryWidth = (end - start) / offsetRange * width;
+      let entryWidth = Math.round((end - start) / offsetRange * width);
       let visibleWidth = x < 0 ? x + entryWidth : entryWidth;
 
       entry.visible = false;
@@ -240,7 +239,7 @@ export default class Stack extends React.Component {
         visibleWidth -= x + visibleWidth - width;
       }
 
-      if (visibleWidth <= 0) {
+      if (visibleWidth <= 2) {
         continue;
       }
 
@@ -300,13 +299,10 @@ export default class Stack extends React.Component {
     context.textBaseline = 'alphabetic';
     context.font = styles.stackEntry.font;
 
+    const minTextWidth = measureTextWidth(context, '-');
+
     for (let { rect: { x, y, width: entryWidth, height: entryHeight }, visible, textFill, fill, name, highlighted, selected } of entries) {
       if (visible) {
-        const textStart = Math.max(x, 0);
-        const textWidth = entryWidth;
-        const textBaseHeight = entryHeight - styles.stackEntry.textBaseline;
-        const trimmedText = trimTextMiddle(context, name, textWidth - 2 * styles.stackEntry.textPadding);
-
         if (selected) {
           context.fillStyle = styles.stackEntrySelected.fillStyle;
           context.fillRect(x, y, entryWidth - 1, entryHeight);
@@ -322,7 +318,16 @@ export default class Stack extends React.Component {
           context.fillStyle = textFill || styles.stackEntry.textFillStyle;
         }
 
-        context.fillText(trimmedText, textStart + styles.stackEntry.textPadding, y + textBaseHeight);
+        if (entryWidth > minTextWidth) {
+          const textStart = Math.max(x, 0);
+          const textWidth = entryWidth;
+          const textBaseHeight = entryHeight - styles.stackEntry.textBaseline;
+          const trimmedText = trimTextMiddle(context, name, textWidth - 2 * styles.stackEntry.textPadding);
+
+          if (trimmedText.length > 0) {
+            context.fillText(trimmedText, textStart + styles.stackEntry.textPadding, y + textBaseHeight);
+          }
+        }
       }
     }
 
@@ -384,7 +389,7 @@ export default class Stack extends React.Component {
     const { entries, maxDepth } = this.state;
     const { computedWidth: width, overviewType, overviewHeight: height, overviewCalculator, overviewCanvas: { ref: { context } } } = this.props;
 
-    const { min, max } = overviewCalculator.getRange();
+    const { min, max } = overviewCalculator.props;
     const range = max - min;
 
     context.clearRect(0, 0, width, height);
@@ -402,6 +407,8 @@ export default class Stack extends React.Component {
         context.fillRect(x, Math.floor(depth / maxDepth * height), entryWidth, Math.ceil(1 / maxDepth * height));
       }
     }
+
+    context.closePath();
   }
 
   componentWillUnmount() {
