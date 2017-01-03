@@ -6,7 +6,7 @@ export default class Canvas extends React.Component {
   static DPI_INC = 50;
   static DPI_DSC = 100;
   static PREFERRED_FRAME_TIME = 1000 / 60;
-  static MIN_DPI = (window.devicePixelRatio * 0.5) * 1000 + Canvas.DPI_DSC;
+  static MIN_DPI = (window.devicePixelRatio * 0.75) * 1000 + Canvas.DPI_DSC;
   static MAX_DPI = (window.devicePixelRatio || 1) * 1000;
   static FRAME_GROUP_SIZE = 60;
 

@@ -251,11 +251,11 @@ export default class Stack extends React.Component {
         visibleWidth -= x + visibleWidth - width;
       }
 
-      if (visibleWidth <= 2) {
+      if (visibleWidth <= 0) {
         continue;
       }
 
-      visibleWidth = Math.max(2, visibleWidth);
+      visibleWidth = Math.max(3, visibleWidth);
 
       if (x > width) {
         continue;
@@ -398,6 +398,12 @@ export default class Stack extends React.Component {
   }
 
   _renderOverview() {
+    const { computedShowsOverview } = this.props;
+
+    if (computedShowsOverview === false) {
+      return;
+    }
+
     const { entries, maxDepth } = this.state;
     const { computedWidth: width, overviewType, overviewHeight: height, overviewCalculator, overviewCanvas: { ref: { context } } } = this.props;
 

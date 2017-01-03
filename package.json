@@ -1,6 +1,6 @@
 {
   "name": "react-flamechart",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "scripts": {
     "watch": "export NODE_ENV=development; ./node_modules/grunt/bin/grunt watch",
     "build": "export NODE_ENV=production; ./node_modules/grunt/bin/grunt build"

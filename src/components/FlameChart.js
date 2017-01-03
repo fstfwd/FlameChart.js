@@ -441,6 +441,7 @@ export default class FlameChart extends React.Component {
 
       return React.cloneElement(child, {
         key: i,
+        computedShowsOverview: overviewHeight > 0,
         computedHeight: stackHeight,
         computedCollapsed: isCollapsed,
         computedWidth: width,

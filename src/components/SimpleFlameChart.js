@@ -41,7 +41,6 @@ export class SimpleFlameChart extends React.Component {
   static defaultProps = {
     theme: 'dark',
     timings: [],
-    start: 0,
     groups: []
   };
 
@@ -104,7 +103,7 @@ export class SimpleFlameChart extends React.Component {
   }
 
   render() {
-    const {
+    let {
       children,
       timings,
       start,
@@ -174,6 +173,10 @@ export class SimpleFlameChart extends React.Component {
         );
       })])(React.Children.toArray(children));
 
+    if (start == null) {
+      start = min;
+    }
+
     return (
       <div className={`simple-flamechart ${theme}`}
            style={{ height: '100%', width: '100%' }}>
@@ -187,10 +190,10 @@ export class SimpleFlameChart extends React.Component {
                  onInput={e => this._performSearch(timings, e.target.value)}/>
           { query && <div className='simple-flamechart-search-count'>{highlightCount} results</div> }
         </div>
-        <WrappedFlameChart min={min - start}
+        <WrappedFlameChart min={min - (min - start)}
                            max={max}
                            styles={theme === 'dark' ? Dark : Light}
-                           start={min - start}>
+                           start={start}>
           {stacks}
         </WrappedFlameChart>
       </div>
