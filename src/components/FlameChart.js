@@ -13,6 +13,8 @@ const { PropTypes } = React;
 export { Stack };
 
 export default class FlameChart extends React.Component {
+  static SCROLL_DECELERATION_RATIO = 1.1;
+
   static propTypes = {
     onStackHeightChange: PropTypes.func,
     onStackCollapse: PropTypes.func,
@@ -72,7 +74,7 @@ export default class FlameChart extends React.Component {
     const { width } = this.props;
     const { _offsetMinRatio: offsetMinRatio, _offsetMaxRatio: offsetMaxRatio } = this;
 
-    const rate = (1 - (offsetMinRatio + offsetMaxRatio)) ** 1.1;
+    const rate = (1 - (offsetMinRatio + offsetMaxRatio)) ** FlameChart.SCROLL_DECELERATION_RATIO;
 
     let cropOffsetX = delta.x / width * rate;
 
@@ -82,6 +84,10 @@ export default class FlameChart extends React.Component {
 
     if (offsetMaxRatio + cropOffsetX < 0) {
       cropOffsetX += Math.abs(offsetMaxRatio + cropOffsetX);
+    }
+
+    if (cropOffsetX === 0) {
+      return;
     }
 
     calculator.update({

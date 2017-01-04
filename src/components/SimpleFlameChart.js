@@ -7,8 +7,11 @@ import { Warm } from '../helpers/HSLColorGenerator';
 import _ from 'lodash';
 import { map, filter } from 'lodash/fp';
 import Checkbox from 'rc-checkbox';
+import Matcher from 'matcher';
 
 export class SimpleStack extends React.Component {
+  static SEARCH_INPUT_DEBOUNCE = 200;
+
   static defaultProps = {
     name: null,
     types: [],
@@ -53,6 +56,8 @@ export class SimpleFlameChart extends React.Component {
     visibility: new Map()
   };
 
+  searchTimeout = 0;
+
   _getTimingColor(timing) {
     return Warm.colorForID(timing.name);
   }
@@ -80,7 +85,14 @@ export class SimpleFlameChart extends React.Component {
     this.setState({ visibility });
   }
 
-  _performSearch(timings, query) {
+  _timingContains({ name }, query) {
+    return String(name).toLowerCase().indexOf(query) > -1 || Matcher.isMatch(name, query);
+  }
+
+  _performSearch() {
+    let { timings, timingContains = this._timingContains } = this.props;
+    const { query } = this.state;
+
     let highlightCount = 0;
     const highlighted = new WeakSet();
 
@@ -89,9 +101,7 @@ export class SimpleFlameChart extends React.Component {
 
       if (validatedQuery.length > 0) {
         for (const timing of timings) {
-          const name = String(timing.name);
-
-          if (name.toLowerCase().indexOf(validatedQuery) + 1) {
+          if (timingContains(timing, validatedQuery)) {
             highlightCount++;
             highlighted.add(timing);
           }
@@ -99,7 +109,7 @@ export class SimpleFlameChart extends React.Component {
       }
     }
 
-    this.setState({ highlighted, highlightCount, query });
+    this.setState({ highlighted, highlightCount });
   }
 
   isTimingSelected(timing) {
@@ -126,6 +136,16 @@ export class SimpleFlameChart extends React.Component {
         return { selected, selectedCount };
       });
     }
+  }
+
+  _handleInput(e) {
+    clearTimeout(this.searchTimeout);
+
+    this.setState({ query: e.target.value }, () => {
+      this.searchTimeout = setTimeout(() => {
+        this._performSearch();
+      }, SimpleStack.SEARCH_INPUT_DEBOUNCE);
+    });
   }
 
   render() {
@@ -211,9 +231,9 @@ export class SimpleFlameChart extends React.Component {
             {groupVisibilityToggles}
           </div>
           <input className='simple-flamechart-search-box'
-                 placeholder='Search'
+                 placeholder='Search by text or .* regex'
                  value={query}
-                 onInput={e => this._performSearch(timings, e.target.value)}/>
+                 onInput={e => this._handleInput(e)}/>
           { query && <div className='simple-flamechart-search-count'>{highlightCount} results</div> }
         </div>
         <WrappedFlameChart min={min - (min - start)}
@@ -226,7 +246,6 @@ export class SimpleFlameChart extends React.Component {
     );
   }
 }
-;
 
 export function renderSimpleFlameChart({
   timings = [],

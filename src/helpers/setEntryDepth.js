@@ -18,7 +18,10 @@ export function greedyStrategy(entries) {
       lastEntry = depths[depth];
 
       if (lastEntry != null) {
-        if (start < lastEntry.end && lastEntry.start <= end) {
+        if (
+          start < lastEntry.end && lastEntry.start <= end ||
+          lastEntry.end >= end && lastEntry.start === start
+        ) {
           depth++;
           maxDepth = Math.max(maxDepth, depth);
           continue;

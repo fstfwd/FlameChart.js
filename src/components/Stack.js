@@ -14,6 +14,14 @@ const { PropTypes } = React;
 
 export { Tooltip };
 
+function roundToEven(num) {
+  return 2 * Math.round(num / 2);
+}
+
+function roundToOdd(num) {
+  return 2 * Math.floor(num / 2) + 1;
+}
+
 export default class Stack extends React.Component {
   static MOUSE_CLICK_TIMEOUT = 100;
 
@@ -62,7 +70,9 @@ export default class Stack extends React.Component {
 
   state = {
     maxDepth: 0,
-    scrollTop: 0
+    scrollTop: 0,
+    highlightedTotal: 0,
+    selectedTotal: 0
   };
 
   constructor(...args) {
@@ -94,6 +104,7 @@ export default class Stack extends React.Component {
       const entry = this.getEntryAt(x, y);
 
       if (entry != null) {
+        const { highlightedTotal, selectedTotal } = this.state;
         const { tooltip, styles } = this.props;
 
         if (entry !== this._lastTooltipEntry) {
@@ -102,7 +113,9 @@ export default class Stack extends React.Component {
             tooltipContent = React.cloneElement(tooltip, {
               entry,
               styles,
-              timing: entry.timing
+              timing: entry.timing,
+              highlightedTotal,
+              selectedTotal
             });
           }
 
@@ -203,6 +216,9 @@ export default class Stack extends React.Component {
     const length = timings.length;
     const entries = new Array(length);
 
+    let selectedCounter = 1;
+    let highlightedCounter = 1;
+
     for (let i = 0; i < length; i++) {
       const timing = timings[i];
       const entry = new Entry(); // TODO cache these?
@@ -215,17 +231,22 @@ export default class Stack extends React.Component {
       entry.start = start;
       entry.end = end;
       entry.name = name;
-      entry.textFill = entryTextFillGetter != null && entryTextFillGetter(timing, entry)
+      entry.textFill = entryTextFillGetter != null && entryTextFillGetter(timing, entry);
       entry.fill = fill;
       entry.overviewFill = overviewFill;
       entry.timing = timing;
-      entry.selected = entrySelectedGetter != null && entrySelectedGetter(timing, entry);
-      entry.highlighted = entryHighlightedGetter != null && entryHighlightedGetter(timing, entry);
+      entry.selected = entrySelectedGetter != null && !!entrySelectedGetter(timing, entry) && selectedCounter++;
+      entry.highlighted = entryHighlightedGetter != null && !!entryHighlightedGetter(timing, entry) && highlightedCounter++;
 
       entries[i] = entry;
     }
 
-    return setEntryDepthGreedily(entries);
+    const entryInfo = setEntryDepthGreedily(entries);
+
+    entryInfo.selectedTotal = selectedCounter - 1;
+    entryInfo.highlightedTotal = highlightedCounter - 1;
+
+    return entryInfo;
   }
 
   _computeEntryRects() {
@@ -242,7 +263,7 @@ export default class Stack extends React.Component {
       const x = (start - min) / offsetRange * width + scrollLeft;
       const y = depth * entryHeight + 18 - scrollTop;
 
-      let entryWidth = Math.round((end - start) / offsetRange * width);
+      let entryWidth = Math.max((end - start) / offsetRange * width, 3);
       let visibleWidth = x < 0 ? x + entryWidth : entryWidth;
 
       entry.visible = false;
@@ -267,10 +288,10 @@ export default class Stack extends React.Component {
 
       entry.visible = true;
 
-      rect.x = Math.max(x, 0) + 0.5;
+      rect.x = roundToEven(Math.max(x, 0)) + 0.5; // round to the width of the border
       rect.y = y + 0.5;
       rect.height = entryHeight;
-      rect.width = visibleWidth;
+      rect.width = roundToEven(visibleWidth);
     }
   }
 
@@ -317,15 +338,15 @@ export default class Stack extends React.Component {
       if (visible) {
         if (selected) {
           context.fillStyle = styles.stackEntrySelected.fillStyle;
-          context.fillRect(x, y, entryWidth - 1, entryHeight);
+          context.fillRect(x, y, entryWidth, entryHeight);
           context.fillStyle = styles.stackEntrySelected.textFillStyle;
         } else if (highlighted) {
           context.fillStyle = styles.stackEntryHighlighted.fillStyle;
-          context.fillRect(x, y, entryWidth - 1, entryHeight);
+          context.fillRect(x, y, entryWidth, entryHeight);
           context.fillStyle = styles.stackEntryHighlighted.textFillStyle;
         } else {
           context.fillStyle = fill;
-          context.fillRect(x, y, entryWidth - 1, entryHeight);
+          context.fillRect(x, y, entryWidth, entryHeight);
           context.rect(x, y, entryWidth, entryHeight);
           context.fillStyle = textFill || styles.stackEntry.textFillStyle;
         }
@@ -405,7 +426,7 @@ export default class Stack extends React.Component {
     }
 
     const { entries, maxDepth } = this.state;
-    const { computedWidth: width, overviewType, overviewHeight: height, overviewCalculator, overviewCanvas: { ref: { context } } } = this.props;
+    const { styles, computedWidth: width, overviewType, overviewHeight: height, overviewCalculator, overviewCanvas: { ref: { context } } } = this.props;
 
     const { min, max } = overviewCalculator.props;
     const range = max - min;
@@ -413,9 +434,17 @@ export default class Stack extends React.Component {
     context.clearRect(0, 0, width, height);
     context.beginPath();
 
-    for (const { overviewFill, timing, depth } of entries) {
+    for (const { overviewFill, timing, depth, highlighted, selected } of entries) {
       const x = (timing.start - min) / range * width;
-      const entryWidth = (timing.end - timing.start) / range * width;
+      const entryWidth = Math.max(1, (timing.end - timing.start) / range * width);
+
+      if (highlighted) {
+        context.fillStyle = styles.stackEntryHighlighted.fillStyle;
+        context.fillRect(x, 0, entryWidth, height);
+      } else if (selected) {
+        context.fillStyle = styles.stackEntrySelected.fillStyle;
+        context.fillRect(x, 0, entryWidth, height);
+      }
 
       context.fillStyle = overviewFill;
 
