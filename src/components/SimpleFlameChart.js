@@ -48,7 +48,8 @@ export class SimpleFlameChart extends React.Component {
     highlighted: new WeakSet(),
     highlightCount: 0,
     query: null,
-    selected: null,
+    selected: new WeakSet(),
+    selectedCount: 0,
     visibility: new Map()
   };
 
@@ -61,7 +62,14 @@ export class SimpleFlameChart extends React.Component {
   }
 
   _onTimingClick(timing) {
-    this.setTimingSelected(timing, !this.isTimingSelected(timing));
+    if (this.isTimingSelected(timing)) {
+      this.setTimingSelected(timing, false);
+      return;
+
+    }
+
+    this.setTimingSelected(null);
+    this.setTimingSelected(timing, true);
   }
 
   _setGroupVisibility(name, visible) {
@@ -95,11 +103,29 @@ export class SimpleFlameChart extends React.Component {
   }
 
   isTimingSelected(timing) {
-    return timing != null && timing === this.state.selected;
+    return timing == null ? this.state.selectedCount > 0 : this.state.selected.has(timing);
   }
 
-  setTimingSelected(timing, selected) {
-    this.setState({ selected: selected ? timing : null });
+  setTimingSelected(timing, select) {
+    if (timing == null) {
+      this.setState(() => {
+        return { selected: new WeakSet(), selectedCount: 0 };
+      });
+    } else {
+      this.setState(state => {
+        let { selected, selectedCount } = state;
+
+        if (select) {
+          selected.add(timing);
+          selectedCount++;
+        } else if (selected.has(timing)) {
+          selected.delete(timing);
+          selectedCount--;
+        }
+
+        return { selected, selectedCount };
+      });
+    }
   }
 
   render() {

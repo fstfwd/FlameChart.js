@@ -26,7 +26,7 @@
     </style>
 </head>
 <body>
-<div id='flamechart' style='height:100%; width: 100%'></div>
+<div id='flamechart' style='height:100%; width: 100%; user-select:none;'></div>
 <button onclick='render()' style='position: fixed; bottom: 5px; right: 5px;'> Switch Theme</button>
 </body>
 <script>
@@ -45,9 +45,12 @@
       return;
     }
 
+    flameChart.setTimingSelected(null);
     flameChart.setTimingSelected(timing, true);
 
-    alert('Selected: ' + JSON.stringify(timing, null, 2));
+    setTimeout(function () {
+      alert(JSON.stringify(timing, null, 2));
+    }, 0);
   }
 
   function render() {
@@ -69,6 +72,7 @@
           types: ['transaction'],
           overviewType: 'spread',
           overviewHeight: 50,
+          defaultCollapsed: true,
           defaultHeight: 0.3,
           onTimingClick: onTimingClick,
           getTimingColor(timing) {
