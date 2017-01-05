@@ -10,7 +10,7 @@ import Checkbox from 'rc-checkbox';
 import Matcher from 'matcher';
 
 export class SimpleStack extends React.Component {
-  static SEARCH_INPUT_DEBOUNCE = 200;
+  static SEARCH_INPUT_DEBOUNCE = 500;
 
   static defaultProps = {
     name: null,
@@ -25,27 +25,16 @@ export class SimpleStack extends React.Component {
   }
 }
 
-const WrappedFlameChart = Dimensions({
-  elementResize: true,
-  debounce: 800
-})(class WrappedFlameChart extends React.PureComponent {
-  render() {
-    const { containerWidth, containerHeight, ...props } = this.props;
-
-    return (
-      <FlameChart {...props}
-                  width={containerWidth}
-                  height={containerHeight}/>
-    );
-  }
-});
-
 export class SimpleFlameChart extends React.Component {
+  static RESIZE_DEBOUNCE_TIMEOUT = 300;
+
   static defaultProps = {
     theme: 'dark',
     timings: [],
     groups: []
   };
+
+  ref = {};
 
   state = {
     highlighted: new WeakSet(),
@@ -89,11 +78,10 @@ export class SimpleFlameChart extends React.Component {
     return String(name).toLowerCase().indexOf(query) > -1 || Matcher.isMatch(name, query);
   }
 
-  _performSearch() {
+  _performSearch(query) {
     let { timings, timingContains = this._timingContains } = this.props;
-    const { query } = this.state;
-
     let highlightCount = 0;
+
     const highlighted = new WeakSet();
 
     if (query != null) {
@@ -109,7 +97,7 @@ export class SimpleFlameChart extends React.Component {
       }
     }
 
-    this.setState({ highlighted, highlightCount });
+    this.setState({ query, highlighted, highlightCount });
   }
 
   isTimingSelected(timing) {
@@ -141,11 +129,11 @@ export class SimpleFlameChart extends React.Component {
   _handleInput(e) {
     clearTimeout(this.searchTimeout);
 
-    this.setState({ query: e.target.value }, () => {
-      this.searchTimeout = setTimeout(() => {
-        this._performSearch();
-      }, SimpleStack.SEARCH_INPUT_DEBOUNCE);
-    });
+    const { value } = e.target;
+
+    this.searchTimeout = setTimeout(() => {
+      this._performSearch(value);
+    }, SimpleStack.SEARCH_INPUT_DEBOUNCE);
   }
 
   render() {
@@ -232,16 +220,17 @@ export class SimpleFlameChart extends React.Component {
           </div>
           <input className='simple-flamechart-search-box'
                  placeholder='Search by text or .* regex'
-                 value={query}
                  onInput={e => this._handleInput(e)}/>
           { query && <div className='simple-flamechart-search-count'>{highlightCount} results</div> }
         </div>
-        <WrappedFlameChart min={min - (min - start)}
-                           max={max}
-                           styles={theme === 'dark' ? Dark : Light}
-                           start={start}>
-          {stacks}
-        </WrappedFlameChart>
+        <div>
+          <WrappedFlameChart min={min - (min - start)}
+                             max={max}
+                             styles={theme === 'dark' ? Dark : Light}
+                             start={start}>
+            {stacks}
+          </WrappedFlameChart>
+        </div>
       </div>
     );
   }
@@ -265,6 +254,20 @@ export function renderSimpleFlameChart({
       }
     </SimpleFlameChart>, element);
 }
+
+const WrappedFlameChart = Dimensions({
+  elementResize: true,
+  debounce: SimpleFlameChart.RESIZE_DEBOUNCE_TIMEOUT
+})(class WrappedFlameChart extends React.PureComponent {
+  render() {
+    const { containerWidth, containerHeight, ...props } = this.props;
+    return (
+      <FlameChart {...props}
+                  width={containerWidth}
+                  height={containerHeight}/>
+    );
+  }
+});
 
 export function unrenderSimpleFlameChart(element) {
   return ReactDOM.unmountComponentAtNode(element);

@@ -94,7 +94,10 @@ export const Base = {
   },
   flameChart: {
     position: 'relative',
-    overflow: 'hidden'
+    overflow: 'hidden',
+    '*': {
+      borderSizing: 'border-box'
+    }
   },
   stackWrapper: {
     bottom: 0,

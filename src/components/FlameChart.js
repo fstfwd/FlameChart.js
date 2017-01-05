@@ -549,7 +549,7 @@ export default class FlameChart extends React.Component {
                     width={width}
                     height={overviewViewportHeight}
                     className='overviewGridCanvas'/>
-            <div style={{ position: 'absolute', top: overviewTimelineHeaderHeight, left: 0 }}>
+            <div style={{ position: 'absolute', top: overviewTimelineHeaderHeight, left: 0, fontSize: 0 }}>
               {overviewCanvases}
             </div>
             <div style={{ position: 'absolute', top: 0, left: 0 }}>

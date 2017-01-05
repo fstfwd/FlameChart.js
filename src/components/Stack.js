@@ -18,6 +18,14 @@ function roundToEven(num) {
   return 2 * Math.round(num / 2);
 }
 
+function floorToEven(num) {
+  return 2 * Math.floor(num / 2);
+}
+
+function ceilToEven(num) {
+  return 2 * Math.ceil(num / 2);
+}
+
 function roundToOdd(num) {
   return 2 * Math.floor(num / 2) + 1;
 }
@@ -241,12 +249,9 @@ export default class Stack extends React.Component {
       entries[i] = entry;
     }
 
-    const entryInfo = setEntryDepthGreedily(entries);
+    const maxDepth = setEntryDepthGreedily(entries);
 
-    entryInfo.selectedTotal = selectedCounter - 1;
-    entryInfo.highlightedTotal = highlightedCounter - 1;
-
-    return entryInfo;
+    return { entries, maxDepth, selectedTotal: selectedCounter - 1, highlightedTotal: highlightedCounter - 1 };
   }
 
   _computeEntryRects() {
@@ -263,7 +268,7 @@ export default class Stack extends React.Component {
       const x = (start - min) / offsetRange * width + scrollLeft;
       const y = depth * entryHeight + 18 - scrollTop;
 
-      let entryWidth = Math.max((end - start) / offsetRange * width, 3);
+      let entryWidth = Math.max(Math.round((end - start) / offsetRange * width), 3);
       let visibleWidth = x < 0 ? x + entryWidth : entryWidth;
 
       entry.visible = false;

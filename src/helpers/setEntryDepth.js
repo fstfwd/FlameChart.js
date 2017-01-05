@@ -4,7 +4,7 @@ const compareEntries = (a, b) =>
 export function greedyStrategy(entries) {
   const depths = new Array(20);
 
-  entries = entries.sort(compareEntries);
+  entries.sort(compareEntries);
 
   let maxDepth = 0;
 
@@ -36,5 +36,5 @@ export function greedyStrategy(entries) {
     }
   }
 
-  return { entries, maxDepth };
+  return maxDepth;
 }
