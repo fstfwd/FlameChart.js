@@ -31,11 +31,14 @@ module.exports = function (grunt) {
         keepalive: true
       }
     },
+    copy: {
+      dist: { files: [{ expand: true, cwd: 'src/', src: ['**'], dest: 'lib/', filter: 'isFile' }] }
+    },
     babel: { dist: { files: [{ expand: true, cwd: 'src/', src: ['**/*.js'], dest: 'lib/', ext: '.js' }] } },
     uglify: { dist: { files: [{ expand: true, cwd: 'dist/', src: ['**/*.js'], dest: 'dist/', ext: '.js' }] } }
 
   });
 
   grunt.registerTask('watch', ['webpack:dev']);
-  grunt.registerTask('build', ['webpack:dist', 'uglify:dist', 'babel:dist']);
+  grunt.registerTask('build', ['copy:dist', 'webpack:dist', 'uglify:dist', 'babel:dist']);
 };
