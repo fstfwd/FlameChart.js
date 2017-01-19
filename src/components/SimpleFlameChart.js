@@ -75,7 +75,7 @@ export class SimpleFlameChart extends React.Component {
   }
 
   _timingContains({ name }, query) {
-    return String(name).toLowerCase().indexOf(query) > -1 || Matcher.isMatch(name, query);
+    return String(name).toLowerCase().indexOf(query) > -1 || Matcher.isMatch(name, `*${query}*`);
   }
 
   _performSearch(query) {
