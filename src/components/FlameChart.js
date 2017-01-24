@@ -461,7 +461,8 @@ export default class FlameChart extends React.Component {
 
     let firstPane = true;
     let splitPanes = [
-      <div className='banner'></div>
+      <div key='-1'
+           className='banner'></div>
     ];
 
     for (let i = stacks.length - 1; i >= -1; i--) {
